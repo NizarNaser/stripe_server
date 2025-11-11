@@ -25,5 +25,33 @@ app.post("/create-payment-intent", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+app.post("/create-checkout-session", async (req, res) => {
+  const { amount } = req.body;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: "Food Order" },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: "http://localhost:37215/success",
+      cancel_url: "http://localhost:37215/cancel",
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.listen(4242, () => console.log("✅ Server running on port 4242"));
